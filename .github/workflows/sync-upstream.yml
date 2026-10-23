@@ -20,8 +20,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # 用 PAT（secrets.SYNC_TOKEN）而非默认 GITHUB_TOKEN 覆盖凭据：
+          # GITHUB_TOKEN 永远拿不到 workflows 权限，上游一旦改动/新增
+          # .github/workflows/* 就会 push 被拒（remote rejected: refusing to
+          # allow a GitHub App to create or update workflow ... without
+          # `workflows` permission），同步会静默卡住。
+          token: ${{ secrets.SYNC_TOKEN }}
       - name: Merge upstream changes
         run: |
+          set -xe
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/lbjxr/CF-Navs.git
